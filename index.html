@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <meta name="format-detection" content="telephone=no, email=no"/>
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <meta name="apple-mobile-web-app-status-bar-style" content="black"/>
+    <title>Title</title>
+    <style>
+        body{
+            display: block;
+            clear: both;
+            content: '';
+        }
+        label {
+            display: block;
+            width: 200px;
+            height: 100px;
+            border: 1px solid #ccc;
+            text-align: center;
+            line-height: 100px;
+            cursor: pointer;
+        }
+
+        input {
+            display: none;
+        }
+
+        .x-div {
+            background: #ccc;
+            width: 50px;
+            height: 50px;
+            border: 1px solid #ccc;
+            margin-top: 10px;
+            margin-left: 10px;
+            float: left;
+            position: relative;
+        }
+
+        .img {
+            width: 100%;
+            height: auto;
+            position: absolute;
+            top:0;
+            left:0;
+            right:0;
+            bottom:0;
+            margin: auto;
+
+        }
+        .y-div{
+            background-color:#000;
+            z-index:1000;
+            position: fixed;
+            left:0;
+            top:0;
+        }
+    </style>
+</head>
+<body>
+
+<label>
+    上传图片
+    <!--手机图库，多选-->
+    <input class="imgFile" type="file" accept="image/*" multiple>
+    <!--拍照-->
+    <input class="imgFile" type="file" accept="image/*" capture="camera">
+    <!--录像-->
+    <!--<input class="imgFile" type="file" accept="video/*" capture="camcorder">-->
+
+</label>
+
+
+</body>
+<!--<script src="../yulan-img/jquery/jquery-3.3.1.js"></script>-->
+<script>
+
+
+    //原生写法
+
+    window.onload = function () {
+        var flag = true;
+        var oImgFile = document.querySelectorAll('.imgFile');
+        var aImg = document.querySelector('img');
+        //解决上传图片时capture="camera"在安卓与IOS的兼容性问题（在IOS只能拍照，不能选相册）
+        var ua = navigator.userAgent.toLowerCase();
+        //获取浏览器的userAgent,并转化为小写——注：userAgent是用户可以修改的
+        var isIos = (ua.indexOf('iphone') != -1) || (ua.indexOf('ipad') != -1);
+        //判断是否是苹果手机，是则是true
+        if (isIos) {
+
+            for (var i=0;i<oImgFile.length;i++){
+                oImgFile[i].removeAttribute("capture");
+            }
+        }
+        for(var j=0;j<oImgFile.length;j++){
+            //input改变的时候，进行获取他的路径
+            oImgFile[j].onchange = function () {
+                //调用函数调取图片地址
+                var objUrl = getObjectURL(this.files);
+                console.log(objUrl)
+                //所得到的值为一个数组
+                for (var x = 0; x < objUrl.length; x++) {
+                    //创建元素把路径显示到页面
+                    var oDiv = document.createElement('div');
+                    var oImg = document.createElement('img');
+                    oImg.src = objUrl[x];
+                    oImg.className = 'img';
+                    oDiv.className = 'x-div';
+                    oDiv.appendChild(oImg);
+
+                    document.querySelector('body').appendChild(oDiv);
+                }
+            }
+        }
+        //获取input file的文件地址
+        function getObjectURL(file) {
+            //建立一个放url路径的数组
+            var urlArr = [];
+            //file可能是个多选图片，是个数组，遍历数组
+            for (var i = 0; i < file.length; i++) {
+                //先设定路径微空
+                var url = null;
+                if (window.createObjectURL != undefined) {//basic
+                    url = window.createObjectURL(file[i]);
+                } else if (window.URL != undefined) {//mozilla(firefox)兼容火狐
+                    url = window.URL.createObjectURL(file[i]);
+                } else if (window.webkitURL != undefined) {//webkit or chrome
+                    url = window.webkitURL.createObjectURL(file[i]);
+                }
+                //每次遍历出来的地址全部加入到数组里面
+                urlArr.push(url);
+            }
+            //返回整个数组
+            return urlArr;
+        }
+
+        //点击图片放大预览图片
+        var w = document.documentElement.clientWidth;
+        var h = document.documentElement.clientHeight;
+        console.log(w,h);
+
+        document.querySelector('body').onclick = function (event) {
+            var e = event || window.event;
+            var target = e.target || e.srcElement;
+            if(target.parentNode.nodeName.toLowerCase() === 'div' && flag){
+                console.log('触发了')
+                target.parentNode.className = 'y-div';
+                target.parentNode.style.width = w+'px';
+                target.parentNode.style.height = h+'px';
+                target.className = 'img';
+                flag = !flag;
+            }else if(target.parentNode.nodeName.toLowerCase() == 'div' && !flag){
+                target.parentNode.className = 'x-div';
+                target.parentNode.style.cssText = 'width:50px;height:50px';
+                target.className = 'img';
+                flag = !flag;
+
+            }
+        }
+
+        //点击放大，点击缩小
+//        for(var y=0;y<aImg.length;y++){
+//            aImg[y].onclick = function () {
+//                if(flag){
+//                    this.setAttribute('style','width:100%;height:auto');
+//                    flag = !flag;
+//                }else if(!flag){
+//                    this.removeAttribute('style');
+//                }
+//            }
+//        }
+//
+        
+    };
+
+
+
+
+
+
+        //jquery写法
+
+
+
+
+//
+//    $(function () {
+//        //解决上传图片时capture="camera"在安卓与IOS的兼容性问题（在IOS只能拍照，不能选相册）
+//        var ua = navigator.userAgent.toLowerCase();
+//        //获取浏览器的userAgent,并转化为小写——注：userAgent是用户可以修改的
+//        var isIos = (ua.indexOf('iphone') != -1) || (ua.indexOf('ipad') != -1);
+//        //判断是否是苹果手机，是则是true
+//        if (isIos) {
+//            $(".imgFile").removeAttr("capture");
+//        }
+//
+//
+//        //input改变的时候，进行获取他的路径
+//        $(".imgFile").change(function () {//input的id
+//            //调用函数调取图片地址
+//            var objUrl = getObjectURL(this.files);
+//            //所得到的值为一个数组
+//            for (var i = 0; i < objUrl.length; i++) {
+//                //创建元素把路径显示到页面
+//                $('body').append($("<div><img src=" + objUrl[i] + "></div>"));
+//            }
+//        });
+//
+//        //获取input file的文件地址
+//        function getObjectURL(file) {
+//            //建立一个放url路径的数组
+//            var urlArr = [];
+//            //file可能是个多选图片，是个数组，遍历数组
+//            for (var i = 0; i < file.length; i++) {
+//                //先设定路径微空
+//                var url = null;
+//                if (window.createObjectURL != undefined) {//basic
+//                    url = window.createObjectURL(file[i]);
+//                } else if (window.URL != undefined) {//mozilla(firefox)兼容火狐
+//                    url = window.URL.createObjectURL(file[i]);
+//                } else if (window.webkitURL != undefined) {//webkit or chrome
+//                    url = window.webkitURL.createObjectURL(file[i]);
+//                }
+//                //每次遍历出来的地址全部加入到数组里面
+//                urlArr.push(url);
+//            }
+//            //返回整个数组
+//            return urlArr;
+//        }
+//
+//    });
+</script>
+</html>
